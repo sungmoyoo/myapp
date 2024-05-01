@@ -51,51 +51,7 @@
 
 <div data-th-replace="footer :: footer">꼬리말</div>
 
-<script>
-  let filenames = [];
 
-  $(document).ready(function() {
-
-    $('#summernote').summernote({
-      height: 300,
-      width: 500,
-      callbacks: {
-        onInit: function() {
-          console.log('Summernote is launched');
-        },
-        onImageUpload: function(files) {
-          let data = new FormData();
-          for (const file of files) {
-            data.append("files", file);
-          }
-          $.ajax({
-            url: 'file/upload',
-            type: 'POST',
-            dataType: 'json',
-            contentType: false,
-            processData: false,
-            data: data
-          })
-          .done(function(result) {
-            if (result.length == 0) {
-              alert('로그인 하세요!');
-              return;
-            }
-
-            for (const attachedFile of result) {
-              $('#summernote').summernote('insertImage',
-                'https://kr.object.ncloudstorage.com/bitcamp-devops5-118/board/'
-                + attachedFile.filePath);
-              filenames.push(attachedFile.filePath);
-            }
-            $('#filenames').val(filenames.join());
-          });
-        }
-      }
-    });
-
-  });
-</script>
 
 </body>
 </html>

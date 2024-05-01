@@ -36,6 +36,8 @@ public class AuthController {
       HttpServletResponse response,
       HttpSession session) throws Exception {
 
+    log.debug("Login() 호출");
+
     if (saveEmail != null) {
       Cookie cookie = new Cookie("email", email);
       cookie.setMaxAge(60 * 60 * 24 * 7);
