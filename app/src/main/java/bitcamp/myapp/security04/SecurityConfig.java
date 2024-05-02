@@ -1,6 +1,5 @@
 package bitcamp.myapp.security04;
 
-import bitcamp.myapp.security.SimplePasswordEncoder;
 import bitcamp.myapp.service.MemberService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

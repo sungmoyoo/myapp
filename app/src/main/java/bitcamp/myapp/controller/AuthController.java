@@ -1,5 +1,6 @@
 package bitcamp.myapp.controller;
 
+import bitcamp.myapp.security.MemberUserDetails;
 import bitcamp.myapp.service.MemberService;
 import bitcamp.myapp.vo.Member;
 import javax.servlet.http.Cookie;
@@ -8,6 +9,9 @@ import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User.UserBuilder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -28,18 +32,25 @@ public class AuthController {
     model.addAttribute("email", email);
   }
 
-  @PostMapping("login")
-  public String login(
-      String email,
-      String password,
-      String saveEmail,
-      HttpServletResponse response,
-      HttpSession session) throws Exception {
+  @GetMapping("logout")
+  public String logout(HttpSession session) throws Exception {
+    session.invalidate();
+    return "redirect:/index.html";
+  }
 
-    log.debug("Login() 호출");
+  @RequestMapping("loginSuccess")
+  public String loginSuccess(
+      String saveEmail,
+      HttpSession session,
+      @AuthenticationPrincipal MemberUserDetails principal,
+      HttpServletResponse response) throws Exception {
+    log.debug("로그인 성공!!!");
+
+    log.debug(saveEmail);
+    log.debug(principal);
 
     if (saveEmail != null) {
-      Cookie cookie = new Cookie("email", email);
+      Cookie cookie = new Cookie("email", principal.getUsername());
       cookie.setMaxAge(60 * 60 * 24 * 7);
       response.addCookie(cookie);
     } else {
@@ -48,17 +59,8 @@ public class AuthController {
       response.addCookie(cookie);
     }
 
-    Member member = memberService.get(email, password);
-    if (member != null) {
-      session.setAttribute("loginUser", member);
-    }
+    session.setAttribute("loginUser", principal.getMember());
 
-    return "auth/login";
-  }
-
-  @GetMapping("logout")
-  public String logout(HttpSession session) throws Exception {
-    session.invalidate();
     return "redirect:/index.html";
   }
 }

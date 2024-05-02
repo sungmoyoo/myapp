@@ -1,4 +1,4 @@
-package bitcamp.security01;
+package bitcamp.myapp.security01;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

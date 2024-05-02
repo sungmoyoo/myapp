@@ -1,5 +1,6 @@
 package bitcamp.myapp.controller;
 
+import bitcamp.myapp.annotation.LoginUser;
 import bitcamp.myapp.service.Board2Service;
 import bitcamp.myapp.service.StorageService;
 import bitcamp.myapp.vo.AttachedFile;
@@ -46,17 +47,16 @@ public class Board2Controller {
   public String add(
       Board board,
       HttpSession session,
+      @LoginUser Member loginUser,
       SessionStatus sessionStatus) throws Exception {
 
-    Member loginUser = (Member) session.getAttribute("loginUser");
-    if (loginUser == null) {
-      throw new Exception("로그인하시기 바랍니다!");
-    }
     board.setWriter(loginUser);
 
     // 게시글 등록할 때 삽입한 이미지 목록을 세션에서 가져온다.
     List<AttachedFile> attachedFiles = (List<AttachedFile>) session.getAttribute("attachedFiles");
-
+    if (attachedFiles == null) {
+      attachedFiles = new ArrayList<>();
+    }
     for (int i = attachedFiles.size() - 1; i >= 0; i--) {
       AttachedFile attachedFile = attachedFiles.get(i);
       if (board.getContent().indexOf(attachedFile.getFilePath()) == -1) {
@@ -119,12 +119,8 @@ public class Board2Controller {
   public String update(
       Board board,
       HttpSession session,
+      @LoginUser Member loginUser,
       SessionStatus sessionStatus) throws Exception {
-
-    Member loginUser = (Member) session.getAttribute("loginUser");
-    if (loginUser == null) {
-      throw new Exception("로그인하시기 바랍니다!");
-    }
 
     Board old = boardService.get(board.getNo());
     if (old == null) {
@@ -136,7 +132,9 @@ public class Board2Controller {
 
     // 게시글 변경할 때 삽입한 이미지 목록을 세션에서 가져온다.
     List<AttachedFile> attachedFiles = (List<AttachedFile>) session.getAttribute("attachedFiles");
-
+    if (attachedFiles == null) {
+      attachedFiles = new ArrayList<>();
+    }
     if (old.getFileList().size() > 0) {
       // 기존 게시글에 등록된 이미지 목록과 합친다.
       attachedFiles.addAll(old.getFileList());
@@ -166,12 +164,9 @@ public class Board2Controller {
   }
 
   @GetMapping("delete")
-  public String delete(int no, HttpSession session) throws Exception {
-
-    Member loginUser = (Member) session.getAttribute("loginUser");
-    if (loginUser == null) {
-      throw new Exception("로그인하시기 바랍니다!");
-    }
+  public String delete(
+      int no,
+      @LoginUser Member loginUser) throws Exception {
 
     Board board = boardService.get(no);
     if (board == null) {
@@ -193,12 +188,7 @@ public class Board2Controller {
   }
 
   @GetMapping("file/delete")
-  public String fileDelete(int no, HttpSession session) throws Exception {
-
-    Member loginUser = (Member) session.getAttribute("loginUser");
-    if (loginUser == null) {
-      throw new Exception("로그인하시기 바랍니다!");
-    }
+  public String fileDelete(int no, @LoginUser Member loginUser) throws Exception {
 
     AttachedFile file = boardService.getAttachedFile(no);
     if (file == null) {
@@ -219,12 +209,11 @@ public class Board2Controller {
 
   @PostMapping("file/upload")
   @ResponseBody
-  public Object fileUpload(MultipartFile[] files, HttpSession session, Model model) throws Exception {
+  public Object fileUpload(MultipartFile[] files, @LoginUser Member loginUser, Model model) throws Exception {
     // NCP Object Storage에 저장한 파일의 이미지 이름을 보관할 컬렉션을 준비한다.
     ArrayList<AttachedFile> attachedFiles = new ArrayList<>();
 
     // 로그인 여부를 검사한다.
-    Member loginUser = (Member) session.getAttribute("loginUser");
     if (loginUser == null) {
       // 로그인 하지 않았으면 빈 목록을 보낸다.
       return attachedFiles;
